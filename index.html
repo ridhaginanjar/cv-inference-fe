@@ -19,10 +19,13 @@
                 <p>Model details: MobileNetV4 - ImageNet</p>
             </div>
             <div class="image-container">
-                <img src="images/preview.jpeg" id="image-preview" class="image-preview" alt="Image preview">
+                <div class="upload-placeholder">
+                    <p>No Image Selected</p>
+                </div>
+                <img id="image-preview" class="image-preview hidden" alt="Image preview">
             </div>
             <form action="submit" method="post" id="prediction-form">
-                <input type="file" name="file-submit" id="image" accept="image/*">
+                <input type="file" name="image-submit" id="image" accept="image/*">
 
                 <div class="btn-container">
                     <button type="reset" id="reset">Reset</button>
