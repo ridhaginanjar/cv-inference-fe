@@ -50,42 +50,55 @@
 }
 
 * {
-    margin:0;
-    padding:0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
+html {
     background-color: var(--bg);
 }
 
+img {
+    display: block;
+    max-width: 100%;
+}
+
 body {
+    min-height: 100vh;
+    background-color: var(--bg);
     font-family: var(--font-sans);
 }
 
 header {
     display: flex;
+    width: min(var(--container-width), calc(100% - 32px));
     color: var(--text-primary);
     flex-direction: column;
 
-    margin:var(--space-12);
+    margin: clamp(var(--space-6), 6vw, var(--space-12)) auto var(--space-6);
     gap: 12px;
 }
 
 .main-content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(var(--container-width), calc(100% - 32px));
+    gap: var(--space-4);
 
     color: var(--text-primary);
-    margin: var(--space-12);
+    margin: 0 auto clamp(var(--space-6), 6vw, var(--space-12));
 }
 
 .prediction {
+    min-width: 0;
     border: 1px solid var(--border-strong);
     border-radius: 6px;
-    padding: var(--space-10);
+    padding: clamp(var(--space-5), 4vw, var(--space-10));
 
     display: flex;
     flex-direction: column;
-    gap: 48px;
+    gap: clamp(var(--space-6), 5vw, var(--space-12));
 }
 
 .prediction_header_content {
@@ -98,12 +111,13 @@ header {
 
 .prediction_header_content h2 {
     color: var(--text-primary);
-    font-size: 32px;
+    overflow-wrap: anywhere;
+    font-size: clamp(24px, 5vw, 32px);
 }
 
 .prediction_header_content h3{
     color: var(--accent);
-    font-size: 32px;
+    font-size: clamp(24px, 5vw, 32px);
 }
 .top_k_predictions {
     display: flex;
@@ -135,13 +149,14 @@ header {
 }
 
 .prediction-container {
+    min-width: 0;
     border: 1px solid var(--border-strong);
     border-radius: 6px;
-    padding: var(--space-10);
+    padding: clamp(var(--space-5), 4vw, var(--space-10));
 
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: var(--space-6);
 }
 
 .prediction-info {
@@ -153,7 +168,7 @@ header {
 
 .image-container {
   width: 100%;
-  height: 320px;
+  height: clamp(220px, 32vw, 320px);
 
   background-color: #18181b;
   border: 1px solid #27272a;
@@ -173,7 +188,13 @@ header {
     display: flex;
     flex-direction: column;
 
-    gap:24px;
+    gap: 24px;
+}
+
+#image {
+    width: 100%;
+    color: var(--text-secondary);
+    font: inherit;
 }
 
 .btn-container {
@@ -209,11 +230,78 @@ header {
   font-weight: 500;
   width: 100%;
   
-  color: var(--color-text-secondary);
+  color: var(--text-primary);
   background-color: var(--accent);
 }
 
 footer {
     margin: var(--space-12);
     color: var(--text-primary);
+}
+
+@media (max-width: 860px) {
+  header,
+  .main-content {
+    width: min(var(--container-width), calc(100% - 24px));
+  }
+
+  .main-content {
+    grid-template-columns: 1fr;
+  }
+
+  .prediction-container {
+    order: 1;
+  }
+
+  .prediction {
+    order: 2;
+  }
+}
+
+@media (max-width: 520px) {
+  :root {
+    --space-12: 32px;
+    --space-10: 28px;
+  }
+
+  header {
+    margin-top: var(--space-6);
+  }
+
+  header h1 {
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  header p,
+  .prediction-info p,
+  .prediction_header_content p,
+  footer {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .prediction,
+  .prediction-container {
+    padding: var(--space-5);
+  }
+
+  .image-container {
+    height: 220px;
+    border-radius: var(--radius-sm);
+  }
+
+  .btn-container {
+    flex-direction: column-reverse;
+  }
+
+  #reset,
+  #predict {
+    min-height: 44px;
+  }
+
+  footer {
+    width: min(var(--container-width), calc(100% - 24px));
+    margin: 0 auto var(--space-6);
+  }
 }
