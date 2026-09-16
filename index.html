@@ -70,6 +70,7 @@
     const confidenceBar = document.querySelector(".confidence-bar__fill");
     const containerTopK = document.querySelector(".top_k_predictions");
     const containerPredictionContent = predictionContent.closest(".prediction_header")
+    const mostContainer = containerPredictionContent.closest(".prediction");
     const waitingPredictionHTML = document.querySelector(".waitingPrediction")
     
     imageInput.addEventListener("change", function() {
@@ -99,8 +100,9 @@
         placeholder.classList.add("upload-button");
 
         waitingPredictionHTML.classList.remove("hidden");
-        containerPredictionContent.classList.add("hidden");
         containerTopK.classList.add("hidden");
+        containerPredictionContent.classList.add("hidden");
+
     });
 
     const form = document.querySelector("#prediction-form")
@@ -133,6 +135,7 @@
 
             const end = performance.now()
             const responseTime = end - start
+            console.log(responseTime)
 
             const responseJSON = await responseApi.json()
             console.log(responseJSON)
@@ -141,6 +144,7 @@
             const [rank3, rank3Confidence] = responseJSON[2].split(":")
             const [rank4, rank4Confidence] = responseJSON[3].split(":")
             const responseTimeAPI = `${responseTime.toFixed(2)} ms`
+            console.log(responseTimeAPI)
 
             result = {
                 [`${rank2}`]: rank2Confidence,
@@ -155,7 +159,7 @@
         }
     })
 
-    function updatePredictionOutput(rank1, rank1Confidence, responseTimeAPI) {
+    function updatePredictionOutput(rank1, rank1Confidence, result, responseTimeAPI) {
         const topPredictionHeader = predictionContent.querySelector("h2")
         const topPredictionPercentage = predictionContent.querySelector("h3")
         
@@ -183,8 +187,12 @@
             containerPredictionContent.classList.remove("hidden");
             containerTopK.classList.remove("hidden");
             waitingPredictionHTML.classList.add("hidden")
-
         })
+
+        const responseTimeHTML =  `
+            <p>Response Time: ${responseTimeAPI}</p>
+        `
+        containerTopK.insertAdjacentHTML("beforeend", responseTimeHTML)
     }
 
 </script>
