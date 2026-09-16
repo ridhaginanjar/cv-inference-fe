@@ -34,49 +34,26 @@
             </form>
         </div>
         <div class="prediction">
-            <div class="prediction_header">
+            <div class="waitingPrediction">
+                <h1>Waiting for Predictions</h1>
+                    <svg xmlns="http://w3.org" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                    </svg>
+            </div>
+            <div class="prediction_header hidden">
                 <div class="prediction_header_content">
                     <p>Prediction</p>
-                    <h2>Output: Class</h2>
-                    <h3>75.9%</h3>
+                    <h2></h2>
+                    <h3></h3>
                 </div>
                 <div class="confidence-bar">
                     <div class="confidence-bar__fill"
                     ></div>
                 </div>
             </div>
-            <div class="top_k_predictions">
-                <h3>Top 3 Predictions</h3>
-                <div class="top_k_predictions__group">
-                    <div class="top_k__content">
-                        <h4>Class 1</h4>
-                        <p>9%</p>
-                    </div>
-                    <div class="confidence-bar">
-                        <div class="confidence-bar__fill"
-                        ></div>
-                    </div>
-                </div>
-                <div class="top_k_predictions__group">
-                    <div class="top_k__content">
-                        <h4>Class 2</h4>
-                        <p>5%</p>
-                    </div>
-                    <div class="confidence-bar">
-                        <div class="confidence-bar__fill"
-                        ></div>
-                    </div>
-                </div>
-                <div class="top_k_predictions__group">
-                    <div class="top_k__content">
-                        <h4>Class 2</h4>
-                        <p>3%</p>
-                    </div>
-                    <div class="confidence-bar">
-                        <div class="confidence-bar__fill"
-                        ></div>
-                    </div>
-                </div>
+            <div class="top_k_predictions hidden">
+                <h3>Other Predictions</h3>
             </div>
         </div>
     </main>
@@ -117,6 +94,7 @@
     });
 
     const form = document.querySelector("#prediction-form")
+    let result = null;
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -132,8 +110,10 @@
 
         try {
             console.log("Start Predicting!")
+            const start = performance.now()
+
             let uri = "http://localhost:8000/upload-image"
-            const response = await fetch(uri, {
+            const responseApi = await fetch(uri, {
                 method: "POST",
                 headers: {
                     Accept: "application/json"
@@ -141,13 +121,67 @@
                 body: formData,
             })
 
-            const result = await response.json()
+            const end = performance.now()
+            const responseTime = end - start
+
+            const responseJSON = await responseApi.json()
+            console.log(responseJSON)
+            const [rank1, rank1Confidence] = responseJSON[0].split(":")
+            const [rank2, rank2Confidence] = responseJSON[1].split(":")
+            const [rank3, rank3Confidence] = responseJSON[2].split(":")
+            const [rank4, rank4Confidence] = responseJSON[3].split(":")
+            const responseTimeAPI = `${responseTime.toFixed(2)} ms`
+
+            result = {
+                [`${rank2}`]: rank2Confidence,
+                [`${rank3}`]: rank3Confidence,
+                [`${rank4}`]: rank4Confidence,
+            }
             console.log(result)
+            updatePredictionOutput(rank1, rank1Confidence, result, responseTimeAPI)
             console.log("End Predicting!")
         } catch (e) {
             console.log(e)
         }
     })
+
+    const predictionContent = document.querySelector(".prediction_header_content")
+    const confidenceBar = document.querySelector(".confidence-bar__fill");
+    const containerTopK = document.querySelector(".top_k_predictions");
+    console.log(getComputedStyle(confidenceBar).width)
+
+    function updatePredictionOutput(rank1, rank1Confidence, responseTimeAPI) {
+        const topPredictionHeader = predictionContent.querySelector("h2")
+        const topPredictionPercentage = predictionContent.querySelector("h3")
+        
+        topPredictionHeader.textContent = rank1
+        topPredictionPercentage.textContent = `${rank1Confidence}%`
+        confidenceBar.style.width = `${rank1Confidence}%`
+
+        Object.entries(result).forEach(([key, value]) => {
+            const kontenTopK = `
+                <div class="top_k_predictions__group">
+                    <div class="top_k__content">
+                        <h4>${key}</h4>
+                        <p>${value}%</p>
+                     </div>
+                </div>
+                <div class="confidence-bar">
+                    <div class="confidence-bar__fill" style="width: ${value}%"
+                    ></div>
+                </div>
+            `
+            containerTopK.insertAdjacentHTML("beforeend", kontenTopK)
+
+            const containerPredictionContent = predictionContent.closest(".prediction_header")
+            containerPredictionContent.classList.remove("hidden");
+            containerTopK.classList.remove("hidden");
+
+            const waitingPredictionHTML = document.querySelector(".waitingPrediction")
+            waitingPredictionHTML.classList.add("hidden")
+
+        })
+    }
 
 </script>
 </html>
