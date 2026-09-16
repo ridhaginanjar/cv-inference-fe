@@ -65,6 +65,12 @@
     const imageInput = document.querySelector("#image-submit")
     const imagePreview = document.querySelector("#image-preview")
     const placeholder = document.querySelector(".upload-button")
+
+    const predictionContent = document.querySelector(".prediction_header_content")
+    const confidenceBar = document.querySelector(".confidence-bar__fill");
+    const containerTopK = document.querySelector(".top_k_predictions");
+    const containerPredictionContent = predictionContent.closest(".prediction_header")
+    const waitingPredictionHTML = document.querySelector(".waitingPrediction")
     
     imageInput.addEventListener("change", function() {
         const file = imageInput.files[0];
@@ -91,6 +97,10 @@
         imagePreview.classList.add("hidden");
         placeholder.classList.remove("hidden");
         placeholder.classList.add("upload-button");
+
+        waitingPredictionHTML.classList.remove("hidden");
+        containerPredictionContent.classList.add("hidden");
+        containerTopK.classList.add("hidden");
     });
 
     const form = document.querySelector("#prediction-form")
@@ -145,11 +155,6 @@
         }
     })
 
-    const predictionContent = document.querySelector(".prediction_header_content")
-    const confidenceBar = document.querySelector(".confidence-bar__fill");
-    const containerTopK = document.querySelector(".top_k_predictions");
-    console.log(getComputedStyle(confidenceBar).width)
-
     function updatePredictionOutput(rank1, rank1Confidence, responseTimeAPI) {
         const topPredictionHeader = predictionContent.querySelector("h2")
         const topPredictionPercentage = predictionContent.querySelector("h3")
@@ -173,11 +178,8 @@
             `
             containerTopK.insertAdjacentHTML("beforeend", kontenTopK)
 
-            const containerPredictionContent = predictionContent.closest(".prediction_header")
             containerPredictionContent.classList.remove("hidden");
             containerTopK.classList.remove("hidden");
-
-            const waitingPredictionHTML = document.querySelector(".waitingPrediction")
             waitingPredictionHTML.classList.add("hidden")
 
         })
