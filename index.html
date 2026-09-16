@@ -25,6 +25,9 @@
                 <input type="file" name="image-submit" id="image-submit" accept="image/*" class="hidden">
                 <label for="image-submit" class="upload-button">Please Upload an Image</label>
 
+                <div class="image-metadata">
+                    <p></p>
+                </div>
                 <div class="btn-container">
                     <button type="reset" id="reset">Reset</button>
                     <button type="submit" id="predict">
@@ -81,6 +84,8 @@
     const topPredictionList = document.querySelector(".top-k-list");
     const responseTimeText = document.querySelector(".response-time");
 
+    const imageMetadataText = document.querySelector(".image-metadata p");
+
     imageInput.addEventListener("change", () => {
         const file = imageInput.files[0];
 
@@ -91,6 +96,11 @@
         const imageUrl = URL.createObjectURL(file);
 
         imagePreview.src = imageUrl;
+
+        const fileName = file.name;
+        const fileSize = (file.size / 1024).toFixed(2);
+        imageMetadataText.textContent = `File: ${fileName} - ${fileSize} kb`
+
         imagePreview.classList.remove("hidden");
         uploadButton.classList.add("hidden");
     });
@@ -187,6 +197,7 @@
         mainConfidenceBar.style.width = "0%";
         topPredictionList.innerHTML = "";
         responseTimeText.textContent = "";
+        imageMetadataText.textContent = "";
 
         waitingPrediction.classList.remove("hidden");
         predictionHeader.classList.add("hidden");
