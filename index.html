@@ -19,13 +19,14 @@
                 <p>Model details: MobileNetV4 - ImageNet</p>
             </div>
             <div class="image-container">
-                <div class="upload-placeholder">
+                <!-- <div class="upload-placeholder">
                     <p class="text-placeholder">No Image Selected</p>
-                </div>
+                </div> -->
                 <img id="image-preview" class="image-preview hidden" alt="Image preview">
             </div>
             <form action="submit" method="post" id="prediction-form">
-                <input type="file" name="image-submit" id="image-submit" accept="image/*">
+                <input type="file" name="image-submit" id="image-submit" accept="image/*" class="hidden">
+                <label for="image-submit" class="upload-button">Please Upload an Image</label>
 
                 <div class="btn-container">
                     <button type="reset" id="reset">Reset</button>
@@ -89,7 +90,7 @@
 <script>
     const imageInput = document.querySelector("#image-submit")
     const imagePreview = document.querySelector("#image-preview")
-    const placeholder = document.querySelector(".upload-placeholder")
+    const placeholder = document.querySelector(".upload-button")
     
     imageInput.addEventListener("change", function() {
         const file = imageInput.files[0];
@@ -106,6 +107,7 @@
         console.log(imagePreview)
 
         imagePreview.classList.remove("hidden");
+        placeholder.classList.remove("upload-button");
         placeholder.classList.add("hidden");
     });
 
@@ -114,6 +116,7 @@
     resetPreview.addEventListener("click", () => {
         imagePreview.classList.add("hidden");
         placeholder.classList.remove("hidden");
+        placeholder.classList.add("upload-button");
     });
 
 </script>
