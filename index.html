@@ -20,12 +20,12 @@
             </div>
             <div class="image-container">
                 <div class="upload-placeholder">
-                    <p>No Image Selected</p>
+                    <p class="text-placeholder">No Image Selected</p>
                 </div>
                 <img id="image-preview" class="image-preview hidden" alt="Image preview">
             </div>
             <form action="submit" method="post" id="prediction-form">
-                <input type="file" name="image-submit" id="image" accept="image/*">
+                <input type="file" name="image-submit" id="image-submit" accept="image/*">
 
                 <div class="btn-container">
                     <button type="reset" id="reset">Reset</button>
@@ -86,4 +86,27 @@
         <p>&copy; 2026 ridhaginanjar</p>
     </footer>
 </body>
+<script>
+    const imageInput = document.querySelector("#image-submit")
+    const imagePreview = document.querySelector("#image-preview")
+    const placeholder = document.querySelector(".upload-placeholder")
+    
+    imageInput.addEventListener("change", function() {
+        const file = imageInput.files[0];
+        console.log(file)
+
+        if (!file) {
+            return
+        }
+
+        const imageUrl = URL.createObjectURL(file);
+        console.log(imageUrl)
+        
+        imagePreview.src = imageUrl;
+        console.log(imagePreview)
+
+        imagePreview.classList.remove("hidden");
+        placeholder.classList.add("hidden");
+    });
+</script>
 </html>

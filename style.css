@@ -238,7 +238,7 @@ header {
     display: none;
 }
 
-.upload-placeholder {
+.text-placeholder {
     display: flex;
     justify-content: center;
     align-items: center;
