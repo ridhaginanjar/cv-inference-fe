@@ -19,9 +19,6 @@
                 <p>Model details: MobileNetV4 - ImageNet</p>
             </div>
             <div class="image-container">
-                <!-- <div class="upload-placeholder">
-                    <p class="text-placeholder">No Image Selected</p>
-                </div> -->
                 <img id="image-preview" class="image-preview hidden" alt="Image preview">
             </div>
             <form action="submit" method="post" id="prediction-form">
@@ -118,6 +115,39 @@
         placeholder.classList.remove("hidden");
         placeholder.classList.add("upload-button");
     });
+
+    const form = document.querySelector("#prediction-form")
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const file = imageInput.files[0];
+
+        if (!file) {
+            return
+        }
+
+        const formData = new FormData()
+        formData.append("file", file);
+
+        try {
+            console.log("Start Predicting!")
+            let uri = "http://localhost:8000/upload-image"
+            const response = await fetch(uri, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json"
+                },
+                body: formData,
+            })
+
+            const result = await response.json()
+            console.log(result)
+            console.log("End Predicting!")
+        } catch (e) {
+            console.log(e)
+        }
+    })
 
 </script>
 </html>
