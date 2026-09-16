@@ -163,6 +163,8 @@
         topPredictionPercentage.textContent = `${rank1Confidence}%`
         confidenceBar.style.width = `${rank1Confidence}%`
 
+        containerTopK.innerHTML = '';
+
         Object.entries(result).forEach(([key, value]) => {
             const kontenTopK = `
                 <div class="top_k_predictions__group">
