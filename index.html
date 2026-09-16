@@ -34,9 +34,9 @@
             </form>
         </div>
         <div class="prediction">
-            <div class="waitingPrediction">
+            <div class="waiting-prediction">
                 <h1>Waiting for Predictions</h1>
-                    <svg xmlns="http://w3.org" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10" />
                     <polyline points="12 6 12 12 16 14" />
                     </svg>
@@ -54,6 +54,8 @@
             </div>
             <div class="top_k_predictions hidden">
                 <h3>Other Predictions</h3>
+                <div class="top-k-list"></div>
+                <p class="response-time"></p>
             </div>
         </div>
     </main>
@@ -62,138 +64,133 @@
     </footer>
 </body>
 <script>
-    const imageInput = document.querySelector("#image-submit")
-    const imagePreview = document.querySelector("#image-preview")
-    const placeholder = document.querySelector(".upload-button")
+    const API_URL = "http://localhost:8000/upload-image";
 
-    const predictionContent = document.querySelector(".prediction_header_content")
-    const confidenceBar = document.querySelector(".confidence-bar__fill");
-    const containerTopK = document.querySelector(".top_k_predictions");
-    const containerPredictionContent = predictionContent.closest(".prediction_header")
-    const mostContainer = containerPredictionContent.closest(".prediction");
-    const waitingPredictionHTML = document.querySelector(".waitingPrediction")
-    
-    imageInput.addEventListener("change", function() {
+    const imageInput = document.querySelector("#image-submit");
+    const imagePreview = document.querySelector("#image-preview");
+    const uploadButton = document.querySelector(".upload-button");
+    const resetButton = document.querySelector("#reset");
+    const predictionForm = document.querySelector("#prediction-form");
+
+    const waitingPrediction = document.querySelector(".waiting-prediction");
+    const predictionHeader = document.querySelector(".prediction_header");
+    const predictionTitle = document.querySelector(".prediction_header_content h2");
+    const predictionConfidence = document.querySelector(".prediction_header_content h3");
+    const mainConfidenceBar = document.querySelector(".prediction_header .confidence-bar__fill");
+    const topPredictions = document.querySelector(".top_k_predictions");
+    const topPredictionList = document.querySelector(".top-k-list");
+    const responseTimeText = document.querySelector(".response-time");
+
+    imageInput.addEventListener("change", () => {
         const file = imageInput.files[0];
-        console.log(file)
 
         if (!file) {
-            return
+            return;
         }
 
         const imageUrl = URL.createObjectURL(file);
-        console.log(imageUrl)
-        
+
         imagePreview.src = imageUrl;
-        console.log(imagePreview)
-
         imagePreview.classList.remove("hidden");
-        placeholder.classList.remove("upload-button");
-        placeholder.classList.add("hidden");
+        uploadButton.classList.add("hidden");
     });
 
-    const resetPreview = document.querySelector("#reset")
-
-    resetPreview.addEventListener("click", () => {
+    resetButton.addEventListener("click", () => {
         imagePreview.classList.add("hidden");
-        placeholder.classList.remove("hidden");
-        placeholder.classList.add("upload-button");
+        imagePreview.removeAttribute("src");
+        uploadButton.classList.remove("hidden");
 
-        waitingPredictionHTML.classList.remove("hidden");
-        containerTopK.classList.add("hidden");
-        containerPredictionContent.classList.add("hidden");
-
+        resetPredictionOutput();
     });
 
-    const form = document.querySelector("#prediction-form")
-    let result = null;
-
-    form.addEventListener("submit", async (event) => {
+    predictionForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
         const file = imageInput.files[0];
 
         if (!file) {
-            return
+            return;
         }
 
-        const formData = new FormData()
+        const formData = new FormData();
         formData.append("file", file);
 
         try {
-            console.log("Start Predicting!")
-            const start = performance.now()
+            const startTime = performance.now();
 
-            let uri = "http://localhost:8000/upload-image"
-            const responseApi = await fetch(uri, {
+            const response = await fetch(API_URL, {
                 method: "POST",
                 headers: {
-                    Accept: "application/json"
+                    Accept: "application/json",
                 },
                 body: formData,
-            })
+            });
 
-            const end = performance.now()
-            const responseTime = end - start
-            console.log(responseTime)
-
-            const responseJSON = await responseApi.json()
-            console.log(responseJSON)
-            const [rank1, rank1Confidence] = responseJSON[0].split(":")
-            const [rank2, rank2Confidence] = responseJSON[1].split(":")
-            const [rank3, rank3Confidence] = responseJSON[2].split(":")
-            const [rank4, rank4Confidence] = responseJSON[3].split(":")
-            const responseTimeAPI = `${responseTime.toFixed(2)} ms`
-            console.log(responseTimeAPI)
-
-            result = {
-                [`${rank2}`]: rank2Confidence,
-                [`${rank3}`]: rank3Confidence,
-                [`${rank4}`]: rank4Confidence,
+            if (!response.ok) {
+                throw new Error(`Prediction request failed: ${response.status}`);
             }
-            console.log(result)
-            updatePredictionOutput(rank1, rank1Confidence, result, responseTimeAPI)
-            console.log("End Predicting!")
-        } catch (e) {
-            console.log(e)
+
+            const endTime = performance.now();
+            const apiResponseTime = `${(endTime - startTime).toFixed(2)} ms`;
+            const predictionResponse = await response.json();
+            const predictions = predictionResponse.map(formatPrediction);
+
+            updatePredictionOutput(predictions, apiResponseTime);
+        } catch (error) {
+            console.error(error);
         }
-    })
+    });
 
-    function updatePredictionOutput(rank1, rank1Confidence, result, responseTimeAPI) {
-        const topPredictionHeader = predictionContent.querySelector("h2")
-        const topPredictionPercentage = predictionContent.querySelector("h3")
-        
-        topPredictionHeader.textContent = rank1
-        topPredictionPercentage.textContent = `${rank1Confidence}%`
-        confidenceBar.style.width = `${rank1Confidence}%`
+    function formatPrediction(predictionText) {
+        const [label, confidence] = predictionText.split(":");
 
-        containerTopK.innerHTML = '';
-
-        Object.entries(result).forEach(([key, value]) => {
-            const kontenTopK = `
-                <div class="top_k_predictions__group">
-                    <div class="top_k__content">
-                        <h4>${key}</h4>
-                        <p>${value}%</p>
-                     </div>
-                </div>
-                <div class="confidence-bar">
-                    <div class="confidence-bar__fill" style="width: ${value}%"
-                    ></div>
-                </div>
-            `
-            containerTopK.insertAdjacentHTML("beforeend", kontenTopK)
-
-            containerPredictionContent.classList.remove("hidden");
-            containerTopK.classList.remove("hidden");
-            waitingPredictionHTML.classList.add("hidden")
-        })
-
-        const responseTimeHTML =  `
-            <p>Response Time: ${responseTimeAPI}</p>
-        `
-        containerTopK.insertAdjacentHTML("beforeend", responseTimeHTML)
+        return {
+            label: label.trim(),
+            confidence: parseFloat(confidence),
+        };
     }
 
+    function updatePredictionOutput(predictions, apiResponseTime) {
+        const [bestPrediction, ...otherPredictions] = predictions;
+
+        predictionTitle.textContent = bestPrediction.label;
+        predictionConfidence.textContent = `${bestPrediction.confidence}%`;
+        mainConfidenceBar.style.width = `${bestPrediction.confidence}%`;
+
+        topPredictionList.innerHTML = "";
+
+        otherPredictions.forEach((prediction) => {
+            const topPredictionItem = `
+                <div class="top_k_predictions__group">
+                    <div class="top_k__content">
+                        <h4>${prediction.label}</h4>
+                        <p>${prediction.confidence}%</p>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-bar__fill" style="width: ${prediction.confidence}%"></div>
+                    </div>
+                </div>
+            `;
+
+            topPredictionList.insertAdjacentHTML("beforeend", topPredictionItem);
+        });
+
+        responseTimeText.textContent = `Response Time: ${apiResponseTime}`;
+        waitingPrediction.classList.add("hidden");
+        predictionHeader.classList.remove("hidden");
+        topPredictions.classList.remove("hidden");
+    }
+
+    function resetPredictionOutput() {
+        predictionTitle.textContent = "";
+        predictionConfidence.textContent = "";
+        mainConfidenceBar.style.width = "0%";
+        topPredictionList.innerHTML = "";
+        responseTimeText.textContent = "";
+
+        waitingPrediction.classList.remove("hidden");
+        predictionHeader.classList.add("hidden");
+        topPredictions.classList.add("hidden");
+    }
 </script>
 </html>
